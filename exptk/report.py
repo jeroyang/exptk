@@ -5,6 +5,14 @@ from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
 from builtins import *
 from collections import defaultdict
+from fractions import Fraction
+
+def get_numerator(ratio, max_denominator):
+    fraction = Fraction.from_float(ratio).limit_denominator(max_denominator)
+    return int(fraction.numerator * max_denominator / fraction.denominator)
+
+def get_denominator(ratio, max_numerator):
+    return get_numerator(1/ratio, max_numerator)
 
 class Report:
     """
@@ -48,7 +56,7 @@ class Report:
         p = self.precision()
         f = self.f1()
         syntax = 'Report<P{p:.3f} R{r:.3f} F{f:.3f} {t!r}>'
-        return syntax.format(r=r, p=p, f=f, t=self.title)
+        return syntax.format(p=p, r=r, f=f, t=self.title)
 
     @classmethod
     def from_reports(cls, reports, title):
@@ -73,12 +81,17 @@ class Report:
 
     @classmethod
     def from_scale(cls, gold_number, precision, recall, title):
-        tp_count = gold_number * recall
-        positive_count = tp_count / precision
+        tp_count = get_numerator(recall, gold_number)
+        positive_count = get_denominator(precision, tp_count)
         fp_count = positive_count - tp_count
         fn_count = gold_number - tp_count
-        scale_report = cls(['tp'] * int(tp_count),
-                           ['fp'] * int(fp_count),
-                           ['fn'] * int(fn_count),
+        scale_report = cls(['tp'] * tp_count,
+                           ['fp'] * fp_count,
+                           ['fn'] * fn_count,
                            title)
-        return scale_report
+        syntax = 'P{p:.3f} R{r:.3f}'
+        wanted_title_part = syntax.format(p=precision, r=recall)
+        if wanted_title_part == str(scale_report)[7:20]:
+            return scale_report
+        raise AssertionError('The precision and/or recall has error.\n',
+                wanted_title_part, '!=', str(scale_report)[7:21])
