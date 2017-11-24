@@ -93,5 +93,4 @@ class Report:
         wanted_title_part = syntax.format(p=precision, r=recall)
         if wanted_title_part == str(scale_report)[7:20]:
             return scale_report
-        raise AssertionError('The precision and/or recall has error.\n',
-                wanted_title_part, '!=', str(scale_report)[7:21])
+        raise AssertionError('Fail to generate the correct report.')

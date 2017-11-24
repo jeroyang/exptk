@@ -9,7 +9,7 @@ from builtins import *
 test_report
 ----------------------------------
 
-Tests for `exptk` module.
+Tests for `report` module.
 """
 
 import unittest
@@ -46,7 +46,8 @@ class TestReport(unittest.TestCase):
         self.assertEqual(f1, wanted)
 
     def test_str(self):
-        self.assertEqual(str(self.report), "Report<P0.700 R0.700 F0.700 'testing'>")
+        wanted = "Report<P0.700 R0.700 F0.700 'testing'>"
+        self.assertEqual(str(self.report), wanted )
 
     def test_from_reports(self):
         reports = [
