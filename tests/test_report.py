@@ -16,7 +16,6 @@ import unittest
 
 from exptk import report
 
-
 class TestReport(unittest.TestCase):
 
     def setUp(self):
@@ -69,6 +68,11 @@ class TestReport(unittest.TestCase):
         result_surfaces = {str(result) for result in results}
         wanted_surfaces = {str(result) for result in reports}
         self.assertEqual(result_surfaces, wanted_surfaces)
+
+    def test_split_error(self):
+        the_report = report.Report(['ab', 'cd', 'ef'], ['gh'], ['ij'], 'test')
+        with self.assertRaises(AssertionError):
+            the_report.split()
 
     def test_from_scale(self):
         scale_report = report.Report.from_scale(gold_number=10, precision=0.7, recall=0.7, title='testing')

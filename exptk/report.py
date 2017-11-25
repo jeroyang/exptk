@@ -4,8 +4,13 @@
 from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
 from builtins import *
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from fractions import Fraction
+
+TagBox = namedtuple('TagBox', 'content tag')
+
+def pack_boxes(list_of_content, tag):
+    return [TagBox(content, tag) for content in list_of_content]
 
 def get_numerator(ratio, max_denominator):
     fraction = Fraction.from_float(ratio).limit_denominator(max_denominator)
@@ -26,9 +31,9 @@ class Report:
         fn: the false negative items
         title: the title of this report
         """
-        self.tp = list(zip(tp, [title]*len(tp)))
-        self.fp = list(zip(fp, [title]*len(fp)))
-        self.fn = list(zip(fn, [title]*len(fn)))
+        self.tp = pack_boxes(tp, title)
+        self.fp = pack_boxes(fp, title)
+        self.fn = pack_boxes(fn, title)
         self.title = title
 
     def precision(self):
@@ -62,21 +67,24 @@ class Report:
     def from_reports(cls, reports, title):
         meta_report = cls([], [], [], title)
         for report in reports:
-            meta_report.tp.extend(list(zip(report.tp, [title]*len(report.tp))))
-            meta_report.fp.extend(list(zip(report.fp, [title]*len(report.fp))))
-            meta_report.fn.extend(list(zip(report.fn, [title]*len(report.fn))))
+            meta_report.tp.extend(pack_boxes(report.tp, title))
+            meta_report.fp.extend(pack_boxes(report.fp, title))
+            meta_report.fn.extend(pack_boxes(report.fn, title))
         return meta_report
 
     def split(self):
         title2report = defaultdict(Report)
-        for (content, title), _ in self.tp:
-            title2report[title].tp.append(content)
-        for (content, title), _ in self.fp:
-            title2report[title].fp.append(content)
-        for (content, title), _ in self.fn:
-            title2report[title].fn.append(content)
-        for title, report in title2report.items():
-            report.title = title
+        try:
+            for tagbox, _ in self.tp:
+                title2report[tagbox.tag].tp.append(tagbox.content)
+            for tagbox, _ in self.fp:
+                title2report[tagbox.tag].fp.append(tagbox.content)
+            for tagbox, _ in self.fn:
+                title2report[tagbox.tag].fn.append(tagbox.content)
+            for title, report in title2report.items():
+                report.title = title
+        except AttributeError:
+            raise AssertionError('The report cannot be split')
         return list(title2report.values())
 
     @classmethod
@@ -89,8 +97,4 @@ class Report:
                            ['fp'] * fp_count,
                            ['fn'] * fn_count,
                            title)
-        syntax = 'P{p:.3f} R{r:.3f}'
-        wanted_title_part = syntax.format(p=precision, r=recall)
-        if wanted_title_part == str(scale_report)[7:20]:
-            return scale_report
-        raise AssertionError('Fail to generate the correct report.')
+        return scale_report
