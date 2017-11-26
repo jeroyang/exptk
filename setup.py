@@ -11,7 +11,7 @@ requirements = [
 
 setup(
     name='exptk',
-    version='0.1.0',
+    version='0.2.0',
     description="A toolkit for building a machine learning project",
     long_description=readme,
     author="Chia-Jung, Yang",
