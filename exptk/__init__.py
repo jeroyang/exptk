@@ -8,4 +8,4 @@ from builtins import *
 import os
 __author__ = 'Chia-Jung, Yang'
 __email__ = 'jeroyang@gmail.com'
-__version__ = '0.2.0'
+__version__ = '0.2.1'
